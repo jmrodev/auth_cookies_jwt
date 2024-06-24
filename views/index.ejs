@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Login/Logout</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            width: 300px;
+        }
+
+        h1,
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 0.5rem;
+            color: #555;
+        }
+
+        input[type="text"],
+        input[type="password-log"],
+        input[type="password-reg"] {
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 0.5rem;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #218838;
+        }
+
+        .error {
+            color: red;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .welcome {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        .error {
+            color: red;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Authentication</h1>
+
+        <% if (typeof username !=='undefined' ) { %>
+
+            <p class="welcome">Welcome, <%= username %>!</p>
+            <p>Este es el panel de administración</p>
+            <button id="close-session"> Cerrar sesión</button>
+            <% } %>
+                <% if (typeof error==='undefined' ) { %>
+                    <h2>Login</h2>
+                    <form id="login-form" action="/login" method="post">
+                        <label for="username-log">Username:</label>
+                        <input type="text" id="username-log" name="username-log" required>
+                        <label for="password-log">Password:</label>
+                        <input type="password-log" id="password-log" name="password-log" required>
+                        <button type="submit">Login</button>
+                    </form>
+                    <div id="login-message"></div>
+
+                    <h2>Register</h2>
+                    <form id="register-form" action="/register" method="post">
+                        <label for="username-reg">Username:</label>
+                        <input type="text" id="username-reg" name="username-reg" required>
+                        <label for="password-reg">Password:</label>
+                        <input type="password-reg" id="password-reg" name="password-reg" required>
+                        <button type="submit">Register</button>
+                    </form>
+                    <div id="register-message"></div>
+
+                    <h2>Close session</h2>
+                    <button id="close-session">Close session</button>
+
+                    
+                    <% } %>
+                        <script>
+                            const registerForm = document.querySelector('#register-form');
+                            const loginForm = document.querySelector('#login-form');
+                            const closeSession = document.querySelector('#close-session');
+                            const registerMessage = document.querySelector('#register-message');
+                            const loginMessage = document.querySelector('#login-message');
+
+
+                            registerForm.addEventListener('submit', (e) => {
+                                e.preventDefault();
+                                const username = document.querySelector('#register-form #username-reg').value;
+                                const password = document.querySelector('#register-form #password-reg').value;
+                                fetch('/register', { 
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({ username, password })
+                                })
+                                    .then(res => res.json())
+                                    .then(data => {
+                                        if (data.error) {
+                                            registerMessage.textContent = data.error;
+                                            registerMessage.classList.add('error');
+                                        } else {
+                                            registerMessage.textContent = 'Registration successful!';
+                                            registerMessage.classList.remove('error');
+                                            setTimeout(() => {
+                                                window.location.href = '/protected';
+                                            }, 2000);
+                                        }
+
+                                    });
+                            });
+
+                            loginForm.addEventListener('submit', (e) => {
+                                e.preventDefault();
+                                const username = document.querySelector('#login-form #username-log').value;
+                                const password = document.querySelector('#login-form #password-log').value;
+                                console.log(username, password);
+                                fetch('/login', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({ username, password })
+                                })
+                                    .then(res => res.json())
+                                    .then(data => {
+                                        if (data.error) {
+                                            loginMessage.textContent = data.error;
+                                            loginMessage.classList.add('error');
+
+                                        } else {
+                                            loginMessage.textContent = 'Login successful!';
+                                            loginMessage.classList.remove('error');
+                                             setTimeout(() =>{
+                                             window.location.href = '/protected';
+                                            }, 2000);
+                                        }
+                                    });
+                            });
+
+
+                            closeSession.addEventListener('click', () => {
+                                fetch('/logout', {
+                                    method: 'POST'
+                                })
+                                    .then(res => res.json())
+                                    .then(data => {
+                                        if (data.error) {
+                                            alert(data.error);
+                                        } else {
+                                            window.location.href = '/';
+                                        }
+                                    });
+                            });
+
+                        </script>
+    </div>
+</body>
+
+</html>
